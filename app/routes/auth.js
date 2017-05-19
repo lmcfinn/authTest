@@ -9,11 +9,8 @@ var authController = require('../controllers/authcontroller.js');
 
 module.exports = function(app,passport){
 
-app.get('/signup', authController.signup);
-
-
-app.get('/signin', authController.signin);
-
+// app.get('/signup', authController.signup);
+// app.get('/signin', authController.signin);
 // POST route for saving a new todo
 // app.post("/signin", function(req, res) {
 // 	console.log('---------jjj-----------')
@@ -29,10 +26,10 @@ app.post('/signin',
 	passport.authenticate('local-signin'),
 	function(req, res) {
 
-		// id associated with sign in email
-		// first get email
-		// console.log("jjj", res);
-		console.log("xxx", `/dashboard/${id}`); 
+		//Get the id of the user(email) who signed in
+		console.log("jjj", res.req.user.id);
+
+		// console.log("xxx", `/dashboard/${id}`); 
 
 		var id = 3;
 
@@ -100,11 +97,11 @@ function isLoggedIn(req, res, next) {
 	// if id === queryParamId
 	// show page 
 
-    // if (req.isAuthenticated())
-    // 	console.log("zzz", req.isAuthenticated())
-        // return next();
-if (authorized)
-    // res.redirect('/signin');
+    if (req.isAuthenticated())
+    	console.log("zzz", req.isAuthenticated())
+        return next();
+// if (authorized)
+    res.redirect('/signin');
 }
 
 
