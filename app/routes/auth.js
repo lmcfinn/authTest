@@ -1,5 +1,5 @@
 
-
+var express = require('express');
 var jwt = require("jsonwebtoken");
 
 var token;
@@ -7,108 +7,51 @@ var secret = "1234";
 
 var authController = require('../controllers/authcontroller.js');
 
-module.exports = function(app,passport){
+module.exports = function(app, passport){
 
-app.get('/signup', authController.signup);
+	app.get('/signup', authController.signup);
 
 
-app.get('/signin', authController.signin);
+	app.get('/signin', authController.signin);
 
-// POST route for saving a new todo
-// app.post("/signin", function(req, res) {
-// 	console.log('---------jjj-----------')
-// 	passport.authenticate(
-// 		'local', 
-// 		{ successRedirect: '/dashboard',
-//       	  failureRedirect: '/signin'
-//   		}
-// 	)
-// });
 
-app.post('/signin',
-	passport.authenticate('local-signin'),
-	function(req, res) {
+	app.post('/signin', passport.authenticate('local-signin'), function(req, res) {
+			// if we are in this function, that means that passpport auth'd the email/password combo
 
-		// id associated with sign in email
-		// first get email
-		// console.log("jjj", res);
-		console.log("xxx", `/dashboard/${id}`); 
+			// first thing we do, is we get the user info
+			// we couldnt figure this out on Friday... fucking so easy
+	    	var user = req.user;
 
-		var id = 3;
+	    	// Next we create a JSON Web Token with all the information we need inside.
+	    	// For now, lets just put the id. We might want to add admin priviledges later
+			token = jwt.sign({
+				id: user.id,
+			}, secret)
 
-		// create token jwt
-		token = jwt.sign({
-			id: id,
-			admin: false,
-		}, secret)
-
-		console.log("token", token)
-
-		// id = id
-		// admin = true or false
-
-		
+			// Before we were redirecting to dahsboard/:id.
+			// Why would we do this. I would just render the dashboard handlebar page right away.
+			// We already know the user is valid. He/she just logged in.
+			// Lets just send them to their page directly
+			res.redirect(`/dashboard/${user.id}`);
+		}
+	);
 
 
 
-		// If this function gets called, authentication was successful.
-		// `req.user` contains the authenticated user.
-		res.redirect(`/dashboard/${id}`);
-	  // res.redirect("/dashboard");
-  });
+	app.get('/dashboard/:id', function(req, res) {
+		// In here, I stripped out the passport stuff.
+		// You can choose to add it in later if you see the need for it.
+		// But for now we don't quite need it.
 
+		// Ok what do we want to do here?
+		// The end goal is to deliver the handlebar dashboard page like we do in the POST /signin route
+		// But here, we need to authorize.
+		var decoded = jwt.verify(token, secret);
+		console.log('bruh', decoded)
 
-
-// app.post('/login',
-//   passport.authenticate('local', { successRedirect: '/',
-//                                    failureRedirect: '/login' }));
-
-
-
-app.post('/signup', passport.authenticate('local-signup',  
-	
-				//Added :id after dashboard/ 
-	{ successRedirect: '/dashboard',
-      failureRedirect: '/signup'
-  	}
-));
-
-
-app.get('/dashboard/:id',isLoggedIn, authController.dashboard);
-
-
-app.get('/logout',authController.logout);
-
-
-// app.post('/signin', passport.authenticate('local-signin',  { successRedirect: '/dashboard',
-//                                                     failureRedirect: '/signin'}
-//                                                     ));
-
-
-function isLoggedIn(req, res, next) {
-
-	var decoded = jwt.verify(token, secret);
-		console.log("decoded", decoded) 
-
-	// queryaParams
-	// token
-
-	// open token 
-	// see id
-
-	// if admin = true 
-	// if id === queryParamId
-	// show page 
-
-    // if (req.isAuthenticated())
-    // 	console.log("zzz", req.isAuthenticated())
-        // return next();
-if (authorized)
-    // res.redirect('/signin');
+	});
 }
 
-
-}
 
 
 
