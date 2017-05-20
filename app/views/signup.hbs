@@ -45,19 +45,20 @@
             <input name="password" type="password" />
           </div>
           <div class="row">
-            <input class="btn" type="submit" value="Sign In" />
+            <input id="signinButton" class="btn" type="submit" value="Sign In" />
           </div>
         </form>
       </div>
     </div>
 
     <script>
-      $( "#signin" ).submit(function() {
+      $( "#signinButton" ).on("click", function() {
         console.log('heeeeree')
-          event.preventDefault();
 
-          var email = $(this).serializeArray()[0].value;
-          var password = $(this).serializeArray()[1].value;
+          event.preventDefault();
+          // debugger
+          var email = $("#signin").serializeArray()[0].value;
+          var password = $("#signin").serializeArray()[1].value;
           var data = {email: email, password: password};
           var url = 'http://localhost:5000/signin';
 
@@ -67,13 +68,15 @@
               data: data
           }).done(function( data, textStatus, request) {
               window.localStorage.setItem("token", data.token);
-              launchDashboard(data.user)
+              document.cookie = `shane_token=${data.token}`;
+              window.open(`/dashboard/${data.user}`, '_self', false);
+              // launchDashboard(data.user)
           });
-
       });
 
 
       function launchDashboard(user) {
+        console.log('launch dashboard')
           var url = `http://localhost:5000/dashboard/${user}`;
           var token = window.localStorage.getItem("token");
           var authHeader = { token: token };
@@ -83,6 +86,8 @@
               dataType: "json",
               contentType: "application/json",
               headers: {'Authorization': JSON.stringify(authHeader)}
+          }).done(function(data){
+            console.log('what?')
           })
       }
 

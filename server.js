@@ -1,12 +1,15 @@
-    var express    = require('express')
-    var app        = express()
-    var passport   = require('passport')
-    var session    = require('express-session')
-    var bodyParser = require('body-parser')
-    var env        = require('dotenv').load()
-    var exphbs     = require('express-handlebars')
-
+    var express      = require('express')
+    var app          = express()
+    var passport     = require('passport')
+    var session      = require('express-session')
+    var bodyParser   = require('body-parser')
+    var env          = require('dotenv').load()
+    var exphbs       = require('express-handlebars')
+    var cookieParser = require('cookie-parser')
     var port = 5000;
+
+    // For Cookie parser
+    app.use(cookieParser())
 
     //For BodyParser
     app.use(bodyParser.urlencoded({ extended: true }));
