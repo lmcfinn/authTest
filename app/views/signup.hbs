@@ -3,6 +3,8 @@
 <html>
 <head>
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
   <title>Authentication</title>
 </head>
 <body>
@@ -30,7 +32,7 @@
         </form>
       </div>
       <div class="col-md-6">
-        <form id="signin" name="signin" method="post" action="signin">
+        <form id="signin">
           <div class="row">
             <h2>Sign In</h2>
           </div>
@@ -48,22 +50,45 @@
         </form>
       </div>
     </div>
-    
-<!--         <a href="/login" class="btn btn-default"><span class="fa fa-user"></span> Local Login</a>
-        <a href="/signup" class="btn btn-default"><span class="fa fa-user"></span> Local Signup</a>
 
-  </div>
-<form id="signup" name="signup" method="post" action="/signup">
-  <label for="email">Email Address</label>
-  <input class="text" name="email" type="email" />
-  <label for="firstname">Firstname</label>
-  <input name="firstname" type="text" />
-  <label for="lastname">Lastname</label>
-  <input name="lastname" type="text" />
-  <label for="password">Password</label>
-  <input name="password" type="password" />
-  <input class="btn" type="submit" value="Sign Up" />
-</form> -->
+    <script>
+      $( "#signin" ).submit(function() {
+        console.log('heeeeree')
+          event.preventDefault();
+
+          var email = $(this).serializeArray()[0].value;
+          var password = $(this).serializeArray()[1].value;
+          var data = {email: email, password: password};
+          var url = 'http://localhost:5000/signin';
+
+          $.ajax({
+              type: "POST",
+              url: url,
+              data: data
+          }).done(function( data, textStatus, request) {
+              window.localStorage.setItem("token", data.token);
+              launchDashboard(data.user)
+          });
+
+      });
+
+
+      function launchDashboard(user) {
+          var url = `http://localhost:5000/dashboard/${user}`;
+          var token = window.localStorage.getItem("token");
+          var authHeader = { token: token };
+          $.ajax({
+              type: "GET",
+              url: url,
+              dataType: "json",
+              contentType: "application/json",
+              headers: {'Authorization': JSON.stringify(authHeader)}
+          })
+      }
+
+    </script>
+    
+
 
 </body>
 </html>

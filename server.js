@@ -1,4 +1,4 @@
-    var express    = require('express')
+     var express    = require('express')
     var app        = express()
     var passport   = require('passport')
     var session    = require('express-session')
@@ -20,17 +20,16 @@
 
 
      //For Handlebars
+    // app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+    // app.set("view engine", "handlebars");
+
     app.set('views', './app/views')
     app.engine('hbs', exphbs({extname: '.hbs'}));
     app.set('view engine', '.hbs');
     
 
-    app.get('/signup', function(req, res){
-	  res.render("signup");
-	});
 
-
-	//Models
+    //Models
     var models = require("./app/models");
 
 
@@ -42,25 +41,24 @@
     require('./app/config/passport/passport.js')(passport,models.user);
 
 
+
     //Sync Database
-   	models.sequelize.sync().then(function(){
-    console.log('Nice! Database looks fine')
+    models.sequelize.sync().then(function(){
+        console.log('Nice! Database looks fine')
 
-    }).catch(function(err){
-    console.log(err,"Something went wrong with the Database Update!")
-    });
-
-    app.listen(port, function(err) {
+        app.listen(port, function(err) {
         if(err) {
             throw err;
         }
         console.log("listening on port: " + port)
+        });
+
+    }).catch(function(err){
+        console.log(err,"Something went wrong with the Database Update!")
     });
 
+  
 
 
 
 
-
-
-    

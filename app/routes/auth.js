@@ -7,31 +7,16 @@ var secret = "1234";
 
 var authController = require('../controllers/authcontroller.js');
 
-module.exports = function(app,passport){
+module.exports = function(app,passport) {
 
-// app.get('/signup', authController.signup);
-// app.get('/signin', authController.signin);
-// POST route for saving a new todo
-// app.post("/signin", function(req, res) {
-// 	console.log('---------jjj-----------')
-// 	passport.authenticate(
-// 		'local', 
-// 		{ successRedirect: '/dashboard',
-//       	  failureRedirect: '/signin'
-//   		}
-// 	)
-// });
+	app.get('/signup', authController.signup);
 
-app.post('/signin',
-	passport.authenticate('local-signin'),
-	function(req, res) {
+	app.post('/signin', passport.authenticate('local-signin'), function(req, res) {
 
 		//Get the id of the user(email) who signed in
-		console.log("jjj", res.req.user.id);
+		console.log("signin", req.user.id);
 
-		// console.log("xxx", `/dashboard/${id}`); 
-
-		var id = 3;
+		var id = req.user.id;
 
 		// create token jwt
 		token = jwt.sign({
@@ -41,71 +26,82 @@ app.post('/signin',
 
 		console.log("token", token)
 
+		res.json({token: token, user: id})	
+
 		// id = id
 		// admin = true or false
 
-		
-
-
-
 		// If this function gets called, authentication was successful.
 		// `req.user` contains the authenticated user.
-		res.redirect(`/dashboard/${id}`);
-	  // res.redirect("/dashboard");
-  });
+		// res.redirect(`/dashboard/${id}`);
+  	});
+
+
+	app.post('/signup', passport.authenticate('local-signup',
+		{ 
+	  		successRedirect: '/dashboard/:id',
+      		failureRedirect: '/signup'
+  		}
+	));
+
+	app.get('/dashboard/:id', function(req, res) {
+		// console.log('------------------', JSON.parse(req.headers.authorization).token)
+
+		// In here, I stripped out the passport stuff.
+		// You can choose to add it in later if you see the need for it.
+		// But for now we don't quite need it.
+
+		// Ok what do we want to do here?
+		// The end goal is to deliver the handlebar dashboard page like we do in the POST /signin route
+		// But here, we need to authorize.
+		var decoded = jwt.verify(JSON.parse(req.headers.authorization).token, secret);
+		console.log('fuckckckckckckckk')
+		console.log('decodedJWT', decoded.id)
+		console.log('queryParam', req.params)
+		// console.log('headers', req.headers)
+
+		// So what do we need to execute this authorization?
+		// 1. We need the id in the query string (the query param).
+		// 2. We need the id in the token
+		// If they match, then we can deliver the dashboard page
+		if (decoded.id.toString() === req.params.id.toString()) {
+			console.log('yessssssss')
+			res.render('dashboard');
+		} else {
+			console.log('nooooooooo')
+			// else, you should send them to another page or send them a notification, redirect, or something
+			// this is up to you and your group
+			// res.redirect('/dumbass');
+		}
+
+	});
 
 
 
-// app.post('/login',
-//   passport.authenticate('local', { successRedirect: '/',
-//                                    failureRedirect: '/login' }));
+
+	// app.get('/dashboard/:id',isLoggedIn, authController.dashboard);
 
 
-
-app.post('/signup', passport.authenticate('local-signup',  
-	
-				//Added :id after dashboard/ 
-	{ successRedirect: '/dashboard',
-      failureRedirect: '/signup'
-  	}
-));
+	app.get('/logout',authController.logout);
 
 
-app.get('/dashboard/:id',isLoggedIn, authController.dashboard);
+// // app.post('/signin', passport.authenticate('local-signin',  { successRedirect: '/dashboard',
+// //                                                     failureRedirect: '/signin'}
+// //                                                     ));
 
 
-app.get('/logout',authController.logout);
+	// function isLoggedIn(req, res, next) {
 
+	// 	// var decoded = jwt.verify(token, secret);
+	// 	// 	console.log("decoded", decoded) 
 
-// app.post('/signin', passport.authenticate('local-signin',  { successRedirect: '/dashboard',
-//                                                     failureRedirect: '/signin'}
-//                                                     ));
+ //    	if (req.isAuthenticated())
+ //    		console.log("zzz", req.isAuthenticated())
+ //        	return next();
+ //    	res.redirect('/dashboard');
+	// }
 
-
-function isLoggedIn(req, res, next) {
-
-	var decoded = jwt.verify(token, secret);
-		console.log("decoded", decoded) 
-
-	// queryaParams
-	// token
-
-	// open token 
-	// see id
-
-	// if admin = true 
-	// if id === queryParamId
-	// show page 
-
-    if (req.isAuthenticated())
-    	console.log("zzz", req.isAuthenticated())
-        return next();
-// if (authorized)
-    res.redirect('/signin');
-}
-
-
-}
+};
 
 
 
