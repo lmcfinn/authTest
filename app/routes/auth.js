@@ -2,6 +2,7 @@
 var express = require('express');
 var jwt = require("jsonwebtoken");
 
+
 var token;
 var secret = "1234";
 
@@ -17,6 +18,8 @@ module.exports = function(app, passport){
 
 	app.post('/signin', passport.authenticate('local-signin'), function(req, res, next) {
 
+		console.log()
+
 			// if we are in this function, that means that passpport auth'd the email/password combo
 
 			// first thing we do, is we get the user info
@@ -29,6 +32,7 @@ module.exports = function(app, passport){
 				id: user.id,
 			}, secret)
 
+			console.log('token', token)
 			// we respond with a json with the token in it.
 			// now the client (browser) will have to take the token.. and store it in local storage on their end
 			// and every time the client requests a dashboard page (GET dashboard/3), they will have to send the token in 
@@ -37,8 +41,9 @@ module.exports = function(app, passport){
 	);
 
 	app.get('/dashboard/:id', function(req, res) {
-		// console.log('------------------', JSON.parse(req.headers.authorization).token)
 
+		console.log('------------------', req.headers)
+		console.log('Cookies: ', req.cookies["shane_token"])
 		// In here, I stripped out the passport stuff.
 		// You can choose to add it in later if you see the need for it.
 		// But for now we don't quite need it.
@@ -46,7 +51,8 @@ module.exports = function(app, passport){
 		// Ok what do we want to do here?
 		// The end goal is to deliver the handlebar dashboard page like we do in the POST /signin route
 		// But here, we need to authorize.
-		var decoded = jwt.verify(JSON.parse(req.headers.authorization).token, secret);
+		var token = req.cookies["shane_token"];
+		var decoded = jwt.verify(token, secret);
 		console.log('fuckckckckckckckk')
 		console.log('decodedJWT', decoded.id)
 		console.log('queryParam', req.params)
@@ -58,7 +64,7 @@ module.exports = function(app, passport){
 		// If they match, then we can deliver the dashboard page
 		if (decoded.id.toString() === req.params.id.toString()) {
 			console.log('yessssssss')
-			res.render('dashboard');
+			res.render("dashboard");
 		} else {
 			console.log('nooooooooo')
 			// else, you should send them to another page or send them a notification, redirect, or something
