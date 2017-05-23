@@ -27,14 +27,16 @@
             <input name="password" type="password" />
           </div>
           <div class="row">
-            <input class="btn" type="submit" value="Sign Up" />
+            <input id="signupButton" class="btn" type="submit" value="Sign Up" />
           </div>
         </form>
       </div>
+
       <div class="col-md-6">
         <form id="signin">
           <div class="row">
             <h2>Sign In</h2>
+            <h2 id="invalid"></h2>
           </div>
           <div class="row">
             <label for="email">Email Address</label>
@@ -53,7 +55,6 @@
 
     <script>
       $( "#signinButton" ).on("click", function() {
-        console.log('heeeeree')
 
           event.preventDefault();
           // debugger
@@ -67,47 +68,49 @@
               url: url,
               data: data
           }).done(function( data, textStatus, request) {
+            console.log("signin button", data)
+
+            if (data.user == false) {
+
+                $("#invalid").html("wrong username or password")
+
+            } else{
+              // console.log("textStatus", textStatus);
+              console.log("data------------", data);
               window.localStorage.setItem("token", data.token);
-              document.cookie = `shane_token=${data.token}`;
+              document.cookie = `user_token=${data.token}`;
               window.open(`/dashboard/${data.user}`, '_self', false);
-              // launchDashboard(data.user)
+            }
+              
           });
       });
 
 
-      function launchDashboard(user) {
-        console.log('launch dashboard')
-          var url = `http://localhost:5000/dashboard/${user}`;
-          var token = window.localStorage.getItem("token");
-          var authHeader = { token: token };
+      $("#signupButton").on("click", function() {
+
+          event.preventDefault();
+
+          var email = $("#signup").serializeArray()[0].value;
+          var password = $("#signup").serializeArray()[1].value;
+          var data = {email: email, password: password};
+          var url = 'http://localhost:5000/signup';
+
           $.ajax({
-              type: "GET",
+              type: "POST",
               url: url,
-              dataType: "json",
-              contentType: "application/json",
-              headers: {'Authorization': JSON.stringify(authHeader)}
-          }).done(function(data){
-            console.log('what?')
-          })
-      }
+              data: data
+          }).done(function( data, textStatus, request) {
+
+              console.log("data-signup", data);
+              window.localStorage.setItem("token", data.token);
+              document.cookie = `user_token=${data.token}`;
+              window.open(`/dashboard/${data.user}`, '_self', false);
+          });
+
+      });
 
     </script>
-    
-<!--         <a href="/login" class="btn btn-default"><span class="fa fa-user"></span> Local Login</a>
-        <a href="/signup" class="btn btn-default"><span class="fa fa-user"></span> Local Signup</a>
-
-  </div>
-<form id="signup" name="signup" method="post" action="/signup">
-  <label for="email">Email Address</label>
-  <input class="text" name="email" type="email" />
-  <label for="firstname">Firstname</label>
-  <input name="firstname" type="text" />
-  <label for="lastname">Lastname</label>
-  <input name="lastname" type="text" />
-  <label for="password">Password</label>
-  <input name="password" type="password" />
-  <input class="btn" type="submit" value="Sign Up" />
-</form> -->
+  
 
 </body>
 </html>

@@ -89,16 +89,20 @@
     var User = user;
 
     var isValidPassword = function(userpass,password){
+
+      console.log("0");
       return bCrypt.compareSync(password, userpass);
     }
 
     User.findOne({ where : { email: email}}).then(function (user) {
 
       if (!user) {
+        console.log("1");
         return done(null, false, { message: 'Email does not exist' });
       }
 
       if (!isValidPassword(user.password,password)) {
+        console.log("2");
 
         return done(null, false, { message: 'Incorrect password.' });
 
