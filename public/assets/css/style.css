@@ -1,0 +1,33 @@
+body {
+  font-size: 12px;
+  font-family: 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
+  line-height: 1.5;
+  background-color: #c0a16b;
+  color: black;
+  width: 90%;
+}
+
+
+li {
+  padding: 5px;
+  margin: 5px;
+  background: #faebd7;
+}
+
+.label {
+  font-weight: bold;
+}
+
+.create-update-form {
+  padding: 5px;
+  margin: 5px;
+}
+
+.form-group {
+  margin-bottom: 5px;
+}
+
+#eat_it {
+  float: right;
+}
+

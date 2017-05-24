@@ -1,67 +1,63 @@
-    var express      = require('express')
-    var app          = express()
-    var passport     = require('passport')
-    var session      = require('express-session')
-    var bodyParser   = require('body-parser')
-    var env          = require('dotenv').load()
-    var exphbs       = require('express-handlebars')
-    var cookieParser = require('cookie-parser')
-    var expressValidator = require('express-validator');
-    var port = 5000;
+const express = require("express");
+const db = require("./models");
+const bodyParser = require("body-parser");
+var passport     = require('passport');
+var session      = require('express-session');
+var env          = require('dotenv').load();
+var cookieParser = require('cookie-parser');
+var expressValidator = require('express-validator');
+const methodOverride = require("method-override");
 
-    // For Cookie parser
-    app.use(cookieParser())
+const PORT = process.env.PORT || 8000;
+const app = express();
 
-    //For BodyParser
-    app.use(bodyParser.urlencoded({ extended: true }));
-    app.use(bodyParser.json());
-    app.use(expressValidator()); // this line must be immediately after any of the bodyParser middlewares!
+ // For Cookie parser
+ app.use(cookieParser())
+
+// Serve static content for the app from the "public" directory in the application directory.
+// app.use(express.static(process.cwd() + "/public"));
+//
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(expressValidator()); // this line must be immediately after any of the bodyParser middlewares!
+
+ // For Passport
+app.use(session({ secret: 'keyboard cat',resave: true, saveUninitialized:true})); // session secret
+app.use(passport.initialize());
+app.use(passport.session()); // persistent login sessions
+
+//Models
+var models = require("./models");
+
+//Routes
+var authRoute = require('./routes/auth.js')(app,passport);
+
+//load passport strategies
+require('./config/passport/passport.js')(passport,models.user);
+
+// Override with POST having ?_method=DELETE
+app.use(methodOverride("_method"));
+
+// Set Handlebars.
+var exphbs = require("express-handlebars");
+var handlebars = require("handlebars");
+handlebars.registerHelper('dateFormat', require('handlebars-dateformat'));
 
 
-     // For Passport
-    app.use(session({ secret: 'keyboard cat',resave: true, saveUninitialized:true})); // session secret
-    app.use(passport.initialize());
-    app.use(passport.session()); // persistent login sessions
+app.engine("handlebars", exphbs({ defaultLayout: "main" }));
+app.set("view engine", "handlebars");
 
+// app.use("/", routes);
 
-     //For Handlebars
-    app.set('views', './app/views')
-    app.engine('hbs', exphbs({extname: '.hbs'}));
-    app.set('view engine', '.hbs');
-    
+app.use(express.static(__dirname + '/public/assets'));
 
+// Routes =============================================================
+// Import routes and give the server access to them.
+require("./routes/html-routes.js")(app);
 
-	//Models
-    var models = require("./app/models");
-
-
-    //Routes
-    var authRoute = require('./app/routes/auth.js')(app,passport);
-
-
-    //load passport strategies
-    require('./app/config/passport/passport.js')(passport,models.user);
-
-
-    //Sync Database
-   	models.sequelize.sync().then(function(){
-    console.log('Nice! Database looks fine')
-        app.listen(port, function(err) {
-            if(err) {
-                throw err;
-            }
-            console.log("listening on port: " + port)
-        });
-    }).catch(function(err){
-    console.log(err,"Something went wrong with the Database Update!")
+// Syncing our sequelize models and then starting our express app
+db.sequelize.sync().then(function() {
+    app.listen(PORT, function() {
+        console.log("Larocha Health Server - listening on PORT: " + PORT);
     });
-
-   
-
-
-
-
-
-
-
-    
+});
