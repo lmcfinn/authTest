@@ -11,6 +11,7 @@ var db = require("../models");
 var token;
 var secret = "1234";
 
+
 module.exports = function(app, passport){
 
 	app.get('/login', authController.login);
@@ -21,11 +22,14 @@ module.exports = function(app, passport){
 	app.post("/signup", passport.authenticate("local-signup"), function(req, res, next) {
 
 		var userId = req.user.dataValues.id;
-		console.log("new user id", userId) 
+		var admin = req.user.dataValues.admin
+		console.log("new user id", userId)
+		console.log("new user admin", admin)  
 
 		//Create a token 
 		token = jwt.sign({
 					id: userId,
+					admin: admin
 				}, secret);
 
 		//Send the token to the browser/client so that app.get("/dashboard:id") can access it
@@ -36,7 +40,9 @@ module.exports = function(app, passport){
 	app.post('/signin', function(req, res, next) {
 		passport.authenticate('local-signin', function(err, user, info) 
 			{
+	    		var admin = user.admin;
 	    		console.log("signin user", user)
+	    		console.log("signin user admin", user.admin)
 
 	    		if(err) {
 	    			console.log("sign in err")
@@ -51,6 +57,7 @@ module.exports = function(app, passport){
 			    	//If there is a user, create a token
 					token = jwt.sign({
 								id: user.id,
+								admin: admin
 							}, secret);
 
 					//Return the token to browswer/client
@@ -62,6 +69,7 @@ module.exports = function(app, passport){
 	//Process the token/cookie sent to the browser/client
 	app.get('/myprofile/:id', function(req, res) {
 
+
 		//Confirm the sign in user's id
 		console.log('reqParams', req.params)
 		//Confirm token is inside the cookie
@@ -70,21 +78,39 @@ module.exports = function(app, passport){
 		//Verify if the token sent from the server 
 		var token = req.cookies["user_token"];
 		var decoded = jwt.verify(token, secret);
+		
+
+		var admin = decoded.admin;
+
 
 		//Check if the id in the token matches the id in the query string
-		if (decoded.id.toString() === req.params.id.toString()) {
+		if (decoded.id.toString() === req.params.id.toString() ) {
 			console.log('yessssssss')
 			
-			db.User.findOne({
+			if(admin == false) {
+				db.user.findOne({
 				where: {
 					id: req.params.id
 				} 
-			}).then(function(dbUser) {
-				console.log("dbUser", dbUser)
-            	res.render("myprofile", {email: dbUser.email}, {last_login: db.User.last_login})
-        	})
+				}).then(function(dbUser) {
+					console.log("dbUser", dbUser)
+            		res.render("myprofile", {email: dbUser.email, last_login: dbUser.last_login})
+        		})
+			}
 
-        	// res.render("myprofile");
+			if(admin == true) {
+				db.user.findOne({
+				where: {
+					id: req.params.id
+				} 
+				}).then(function(dbUser) {
+					// console.log("dbUser", dbUser)
+            		res.render("myprofile", {email: "adminadmin"})
+        		})
+			}
+	
+
+  
 
 		} else {
 			// console.log('nooooooooo')
